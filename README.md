@@ -37,4 +37,29 @@ Git and Docker
 
 # PROVIDE PERMISSION FOR JENKINS TO RUN DOCKER AND ANSIBLE
 
+Jenkins Got permission denied while trying to connect to the Docker daemon socket permission denied
+
+        ```
+        sudo usermod -a -G docker jenkins
+        ```
+
+Reboot the instance and Restart the Jenkins
+
 ## WHERE JENKINS KEEP ITS GIT REPO ????
+
+
+
+
+
+
+
+
+## CREATE EKS CLUSTER 
+
+```eksctl create cluster --name capstoneclustersagarnil --version 1.21 --nodegroup-name standard-workers --node-type t2.micro --nodes 3 --nodes-min 1 --nodes-max 4 --node-ami auto --region us-east-1```
+
+
+
+## MINIMUM AMI FOR EKSCTL
+
+https://eksctl.io/usage/minimum-iam-policies/

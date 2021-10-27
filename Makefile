@@ -26,8 +26,8 @@ eksctl:
 	eksctl version
 
 
-lint:
-	hadolint Dockerfile
+# lint:
+# 	hadolint Dockerfile
 
-all: 
-	install docker-compose hadolint kubectl minikube aws-cli eksctl
+# all: 
+# 	install docker-compose hadolint kubectl minikube aws-cli eksctl
