@@ -13,6 +13,11 @@ pipeline {
 
         stage('Step #2: Lint Dockerfile') {
             steps {
+                sh '''
+                    if [ -f hadolint_lint.txt ]; then
+                        rm hadolint_lint.txt
+                    fi
+                '''    
                 sh 'hadolint ./Dockerfile | tee -a hadolint_lint.txt'
                 sh '''
                         lintErrors=$(stat --printf="%s"  hadolint_lint.txt)
