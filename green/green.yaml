@@ -13,6 +13,6 @@ spec:
     spec:
       containers:
         - name: green
-          image: chaklader/capstoneappf
+          image: chaklader/capstone-project-image
           ports:
             - containerPort: 80
