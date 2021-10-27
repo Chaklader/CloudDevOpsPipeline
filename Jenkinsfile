@@ -32,6 +32,20 @@ pipeline {
                 '''
             }
         }
+
+
+
+        stage('Step ##: Check verions for Docker and Ansible') {
+
+            steps {
+		sh 'docker version'
+                sh 'echo ""'
+		sh 'ansible --version'
+                sh 'echo ""'
+		sh 'ansible-playbook --version'
+                sh 'echo ""'
+            }
+        }
 	    
 	// stage('Build Docker Image') {
    	//     steps {
