@@ -11,6 +11,13 @@ pipeline {
             }
         }
 
+        stage('Step #2: Lint Dockerfile') {
+            steps {
+                sh 'echo "Linting the Dockerfile ..."'    
+		sh 'make lint'
+            }
+        }
+
 
         // stage('Step #2: Lint Dockerfile') {
         //     steps {
