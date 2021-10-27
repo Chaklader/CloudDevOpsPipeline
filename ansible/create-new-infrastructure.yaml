@@ -1,0 +1,23 @@
+---
+- hosts: all
+  become: true
+  tasks:
+      - name: stop if we have old docker container
+        command: docker stop capstone-project-container
+        ignore_errors: yes
+
+      - name: remove stopped docker container
+        command: docker rm capstone-project-container
+        ignore_errors: yes
+
+      - name: remove current docker image
+        command: docker rmi capstone-project-image
+        ignore_errors: yes
+
+      - name: building docker image
+        command: docker build -t capstone-project-image .
+        # args:
+        #     chdir: /opt/docker
+
+      # - name: creating docker image
+      #   command: docker run -d --name capstone-project-container -p 8080:8080 capstone-project-image
