@@ -6,9 +6,9 @@ pipeline {
 	    
         stage('Step #1: Lint HTML') {
             steps {
-		sh 'echo "Lint check..."'
-                sh 'tidy -q -e *.html'
-            }
+                sh 'echo "Lint check..."'
+                    sh 'tidy -q -e *.html'
+                }
         }
 
         stage('Step #2: Lint Dockerfile') {
@@ -32,120 +32,128 @@ pipeline {
                 '''
             }
         }
-	    
-	stage('Build Docker Image') {
-   	    steps {
+            
+        stage('Step #3: Build Docker Image') {
+            steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-		    
+            
                     sh 'echo "Building Docker Image..."'
-     	    	    sh 'docker build -t chaklader/capstone-project-image .'
-		}
+                    sh 'docker build -t chaklader/capstone-project-image .'
+                }
             }
         }
-	    
-	stage('Push Image To Dockerhub') {
-   	    steps {
+            
+        stage('Step #4: Push Image To Dockerhub') {
+            steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-		    sh 'echo "Pushing Docker Image..."'
-
-     	    	    sh '''
-                        docker login -u $USERNAME -p $PASSWORD
-			docker push chaklader/capstone-project-image
+                    sh 'echo "Pushing Docker Image..."'
+                    sh '''
+                            docker login -u $USERNAME -p $PASSWORD
+                            docker push chaklader/capstone-project-image
                     '''
-		}
+                }
             }
         }
 
-	stage('Deploying') {
-              steps{
-                  echo 'Deploying to AWS...'
-                  withAWS(credentials: 'aws-static', region: 'us-east-1') {
+        // update the ARN from the AWS EKS cluster configuration
+        stage('Step #5: Deploying') {
+            steps{
+                echo 'Deploying to AWS...'
 
-                      sh "aws eks --region us-east-1 update-kubeconfig --name capstoneproject"
-                      sh "kubectl config use-context arn:aws:eks:us-east-1:602502938985:cluster/capstoneproject"
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
 
-                //       sh "kubectl apply -f capstone-k8s.yaml"
-
-                      sh "kubectl get nodes"
-                      sh "kubectl get deployments"
-                      sh "kubectl get pod -o wide"
-                      sh "kubectl get service/capstoneproject"
-                  }
-              }
+                    sh "aws eks --region us-east-1 update-kubeconfig --name capstoneproject"
+                    sh "kubectl config use-context arn:aws:eks:us-east-1:602502938985:cluster/capstoneproject"
+                }
+            }
         }
+    
 
-        stage('Checking if app is up') {
-              steps{
-                  echo 'Checking if app is up...'
-                  withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
+        stage('Step #6: Deploy Blue container') {
+            steps {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
+                    sh 'echo "Deploy blue container..."'
+                    sh 'kubectl apply -f ./blue/blue.yaml'
+                }
+            }
+        }
+	    	    
+        stage('Step #7: Deploy Green container') {
+            steps {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
 
-                     sh "curl a238875e75a6a4d6faa5c4a8773bccb8-312821804.us-east-1.elb.amazonaws.com:9080"
-                    //  slackSend(message: "The app is up at: ad0e6a88870a9477989eb79393197b59-2120449898.ap-south-1.elb.amazonaws.com:9080", sendAsText: true)
-                  }
-               }
+                    sh 'echo "Deploy green container..."'
+                    sh 'kubectl apply -f ./green/green.yaml'
+                }
+            }
         }
-
-        
-        stage('Checking rollout') {
-              steps{
-                  echo 'Checking rollout...'
-                  withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
-                     sh "kubectl rollout status deployments/capstone-app-sagarnil"
-                  }
-              }
-        }
-        stage("Cleaning up") {
-              steps{
-                    echo 'Cleaning up...'
-                    sh "docker system prune"
-              }
-        }
-	 
 	    
-	// stage('Configure kubectl') {
-	//     steps {
-	// 	withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
-	// 	    sh 'echo "Configure kubectl..."'
-	// 	    sh '/usr/local/bin/aws eks --region us-west-1 update-kubeconfig --name capstoneappprojectffff' 
-	// 	}
-	//     }
+        stage('Step #8: Create blue service') {
+            steps {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
+
+                    sh 'echo "Create blue service..."'
+                    sh 'kubectl apply -f ./blue/blue_service.yaml'
+                }
+            }
+        }
+            
+        stage('Step #9: Update service to green') {
+
+            steps {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
+
+                    sh 'echo "Update service to green..."'
+                    sh 'kubectl apply -f ./green/green_service.yaml'
+                }
+            }
+        }	
+   
+        stage('Step #10: Checking if app is up') {
+   
+            steps{
+                echo 'Checking if app is up...'
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
+
+                    sh "curl a238875e75a6a4d6faa5c4a8773bccb8-312821804.us-east-1.elb.amazonaws.com:9080"
+                    //  slackSend(message: "The app is up at: ad0e6a88870a9477989eb79393197b59-2120449898.ap-south-1.elb.amazonaws.com:9080", sendAsText: true)
+                }
+            }
+        }
+
+
+        stage('Step #11: Kubernates deployment info') {
+            steps{
+                echo 'Kubernates deployment info.....'
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
+
+                    // sh "kubectl apply -f capstone-k8s.yaml"
+
+                    sh "kubectl get nodes"
+                    sh "kubectl get deployments"
+                    sh "kubectl get pod -o wide"
+                    sh "kubectl get service/bglb"
+                }
+            }
+        }
+
+        // stage('Step #12: Checking rollout') {
+        //     steps{
+
+        //         echo 'Checking rollout...'
+        //         withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
+
+        //             sh "kubectl rollout status deployments/capstoneproject"
+        //         }
+        //     }
         // }
 
-	// stage('Deploy blue container') {
-	//     steps {
-	// 	withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
-	// 	    sh 'echo "Deploy blue container..."'
-	// 	    sh '/usr/local/bin/kubectl apply -f ./blue/blue.yaml'
-	// 	}
-	//     }
-	// }
-	    	    
-	// stage('Deploy green container') {
-	//     steps {
-	// 	withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
-	// 	    sh 'echo "Deploy green container..."'
-	// 	    sh '/usr/local/bin/kubectl apply -f ./green/green.yaml'
-	// 	}
-	//     }
-	// }
-	    
-	// stage('Create blue service') {
-	//     steps {
-	// 	withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
-	// 	    sh 'echo "Create blue service..."'
-	// 	    sh '/usr/local/bin/kubectl apply -f ./blue/blue_service.yaml'
-	// 	}
-	//     }
-	// }
-	    
-	// stage('Update service to green') {
-	//     steps {
-	// 	withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
-	// 	    sh 'echo "Update service to green..."'
-	// 	    sh '/usr/local/bin/kubectl apply -f ./green/green_service.yaml'
-	// 	}
-	//     }
-	// }	
-   }   
+        stage("Step #13: Cleaning up") {
+
+            steps{
+                echo 'Cleaning up...'
+                sh "docker system prune"
+            }
+        }
 	    
 }
