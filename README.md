@@ -47,18 +47,15 @@ Reboot the instance and Restart the Jenkins
 
 ## WHERE JENKINS KEEP ITS GIT REPO ????
 
+## MAMANGE CONTAINERS USING ANSIBLE
 
+## CREATE EKS CLUSTER
 
+```
+  aws configure
+```
 
-
-
-
-
-## CREATE EKS CLUSTER 
-
-```eksctl create cluster --name capstoneclustersagarnil --version 1.21 --nodegroup-name standard-workers --node-type t2.micro --nodes 3 --nodes-min 1 --nodes-max 4 --node-ami auto --region us-east-1```
-
-
+`eksctl create cluster --name capstoneproject --version 1.21 --nodegroup-name standard-workers --node-type t2.micro \ --nodes 2 --nodes-min 1 --nodes-max 3 --region us-east-1 --managed`
 
 ## MINIMUM AMI FOR EKSCTL
 
