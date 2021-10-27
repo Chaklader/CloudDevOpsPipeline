@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: true
+  tasks:
+      - name: building docker image
+        command: docker build -t capstone-project-image .
+        # args:
+        #     chdir: /opt/docker
+
+      - name: tag the docker image to push in the docker hub
+        command: docker tag capstone-project-image chaklader/capstone-project-image
+
+      - name: push the docker image to the docker hub
+        command: |
+            docker login -u $USERNAME -p $PASSWORD
+            docker push chaklader/capstone-project-image

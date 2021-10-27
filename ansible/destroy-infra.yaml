@@ -13,6 +13,7 @@
       - name: remove current docker image
         command: |
                 docker rmi capstone-project-image
+                docker rmi chaklader/capstone-project-image
         ignore_errors: yes
 
       # - name: building docker image
