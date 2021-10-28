@@ -135,6 +135,10 @@ pipeline {
                         EKS_ELB_HOSTNAME=$(kubectl get service/bglb -o jsonpath='{.status.loadBalancer.ingress[*].hostname}') \
                         && echo $EKS_ELB_HOSTNAME
 
+                        sleep 60
+                        sleep 60s
+                        sleep 1m
+
                         curl $EKS_ELB_HOSTNAME:8000
                     '''
                     //  slackSend(message: "The app is up at: ad0e6a88870a9477989eb79393197b59-2120449898.ap-south-1.elb.amazonaws.com:9080", sendAsText: true)
