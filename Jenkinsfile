@@ -131,10 +131,12 @@ pipeline {
                 echo 'Checking if app is up...'
                 withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
 
-                    EKS_ELB_HOSTNAME=$(kubectl get service/bglb -o jsonpath='{.status.loadBalancer.ingress[*].hostname}') \
+                    sh '''
+                        EKS_ELB_HOSTNAME=$(kubectl get service/bglb -o jsonpath='{.status.loadBalancer.ingress[*].hostname}') \
                         && echo $EKS_ELB_HOSTNAME
 
-                    sh "curl $EKS_ELB_HOSTNAME:8000"
+                        curl $EKS_ELB_HOSTNAME:8000
+                    '''
                     //  slackSend(message: "The app is up at: ad0e6a88870a9477989eb79393197b59-2120449898.ap-south-1.elb.amazonaws.com:9080", sendAsText: true)
                 }
             }
