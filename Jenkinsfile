@@ -4,12 +4,12 @@ pipeline {
 	
     stages {
 	    
-        stage('Step #1: Lint HTML') {
-            steps {
-                sh 'echo "Lint check..."'
-                    sh 'tidy -q -e *.html'
-                }
-        }
+        // stage('Step #1: Lint HTML') {
+        //     steps {
+        //         sh 'echo "Lint check..."'
+        //             sh 'tidy -q -e *.html'
+        //         }
+        // }
 
         stage('Step #2: Lint Dockerfile') {
             steps {
