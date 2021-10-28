@@ -60,3 +60,7 @@ Reboot the instance and Restart the Jenkins
 ## MINIMUM AMI FOR EKSCTL
 
 https://eksctl.io/usage/minimum-iam-policies/
+
+
+Use Ansible for the container management 
+Check the Dockerfile security

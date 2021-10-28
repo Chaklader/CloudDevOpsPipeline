@@ -32,7 +32,7 @@ pipeline {
                 '''
             }
         }
-            
+    
         stage('Step #3: Build Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
@@ -46,21 +46,20 @@ pipeline {
         stage('Step #4: Push Image To Dockerhub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+                    
                     sh 'echo "Pushing Docker Image..."'
                     sh '''
-                            docker login -u $USERNAME -p $PASSWORD
-                            docker push chaklader/capstone-project-image
+                        docker login -u $USERNAME -p $PASSWORD
+                        docker push chaklader/capstone-project-image
                     '''
                 }
             }
         }
 
-        // update the ARN from the AWS EKS cluster configuration
-        stage('Step #5: Deploying') {
+        stage('Step #5: Kubernetes cluster configuration setup') {
             steps{
                 echo 'Deploying to AWS...'
-
-                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1a') {
 
                     sh "aws eks --region us-east-1 update-kubeconfig --name capstoneproject"
                     sh "kubectl config use-context arn:aws:eks:us-east-1:602502938985:cluster/capstoneproject"
@@ -68,10 +67,10 @@ pipeline {
             }
         }
     
-
         stage('Step #6: Deploy Blue container') {
             steps {
-                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1a') {
+
                     sh 'echo "Deploy blue container..."'
                     sh 'kubectl apply -f ./blue/blue.yaml'
                 }
@@ -80,7 +79,7 @@ pipeline {
 	    	    
         stage('Step #7: Deploy Green container') {
             steps {
-                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1a') {
 
                     sh 'echo "Deploy green container..."'
                     sh 'kubectl apply -f ./green/green.yaml'
@@ -90,7 +89,7 @@ pipeline {
 	    
         stage('Step #8: Create blue service') {
             steps {
-                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1a') {
 
                     sh 'echo "Create blue service..."'
                     sh 'kubectl apply -f ./blue/blue_service.yaml'
@@ -101,38 +100,42 @@ pipeline {
         stage('Step #9: Update service to green') {
 
             steps {
-                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-west-1a') {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1a') {
 
                     sh 'echo "Update service to green..."'
                     sh 'kubectl apply -f ./green/green_service.yaml'
                 }
             }
         }	
-   
-        stage('Step #10: Checking if app is up') {
-   
-            steps{
-                echo 'Checking if app is up...'
-                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
 
-                    sh "curl a238875e75a6a4d6faa5c4a8773bccb8-312821804.us-east-1.elb.amazonaws.com:9080"
-                    //  slackSend(message: "The app is up at: ad0e6a88870a9477989eb79393197b59-2120449898.ap-south-1.elb.amazonaws.com:9080", sendAsText: true)
-                }
-            }
-        }
+        stage('Step #10: Kubernates deployment info') {
 
-
-        stage('Step #11: Kubernates deployment info') {
             steps{
                 echo 'Kubernates deployment info.....'
-                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1a') {
 
                     // sh "kubectl apply -f capstone-k8s.yaml"
 
                     sh "kubectl get nodes"
                     sh "kubectl get deployments"
                     sh "kubectl get pod -o wide"
+
                     sh "kubectl get service/bglb"
+                }
+            }
+        }
+
+        stage('Step #11: Checking if app is up') {
+   
+            steps{
+                echo 'Checking if app is up...'
+                withAWS(credentials: 'AWS_CREDENTIAL', region: 'us-east-1') {
+
+                    EKS_ELB_HOSTNAME=$(kubectl get service/bglb -o jsonpath='{.status.loadBalancer.ingress[*].hostname}') \
+                        && echo $EKS_ELB_HOSTNAME
+
+                    sh "curl $EKS_ELB_HOSTNAME:8000"
+                    //  slackSend(message: "The app is up at: ad0e6a88870a9477989eb79393197b59-2120449898.ap-south-1.elb.amazonaws.com:9080", sendAsText: true)
                 }
             }
         }
@@ -156,4 +159,5 @@ pipeline {
             }
         }
 	    
+    }
 }
