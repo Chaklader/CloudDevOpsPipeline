@@ -33,7 +33,7 @@ Develop a CI/CD pipeline for microservice application with blue/green deployment
 The Kubernets cluster is launched from the Ubuntu terminal using the command:
 
 ```
-        eksctl create cluster --name capstoneproject --version 1.21 --nodegroup-name standard-workers --node-type t2.micro \ --nodes 2 --nodes-min 1 --nodes-max 3 --region us-east-1 --managed
+eksctl create cluster --name capstoneproject --version 1.21 --nodegroup-name standard-workers --node-type t2.micro \ --nodes 2 --nodes-min 1 --nodes-max 3 --region us-east-1 --managed
 ```
 
 <br>
