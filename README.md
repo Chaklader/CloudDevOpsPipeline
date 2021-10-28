@@ -62,11 +62,20 @@ This EKS Cluster ARN and Cluster name needs to be included in the Jenkisnfile fo
 5. AWS CloudFormation stacks
 <img src="images/CLOUDFORMATION_STACKS.png">
 
-6. Web page
+6. Dockerhub image pushed 
+<img src="images/DOCKER_HUB.png">
+
+7. Web page
 <img src="images/WEBSITE.png">
 
 
 
-The URL for the ELB: [http://aa2f2a15f930847b5803c525d5c4ee2f-2072933900.us-east-1.elb.amazonaws.com:8000/]
+ULRS:
+
+1. GITHUB REPO: [https://github.com/Chaklader/CloudDevOpsPipeline]
+2. ELB: [http://aa2f2a15f930847b5803c525d5c4ee2f-2072933900.us-east-1.elb.amazonaws.com:8000/]
+3. 
+
+
 
 

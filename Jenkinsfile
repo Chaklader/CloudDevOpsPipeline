@@ -125,6 +125,11 @@ pipeline {
             }
         }
 
+
+        // sleep 60
+        // sleep 60s
+        // sleep 1m
+
         stage('Step #11: Checking if app is up') {
    
             steps{
@@ -134,10 +139,6 @@ pipeline {
                     sh '''
                         EKS_ELB_HOSTNAME=$(kubectl get service/bglb -o jsonpath='{.status.loadBalancer.ingress[*].hostname}') \
                         && echo $EKS_ELB_HOSTNAME
-
-                        sleep 60
-                        sleep 60s
-                        sleep 1m
 
                         curl $EKS_ELB_HOSTNAME:8000
                     '''
