@@ -70,12 +70,6 @@ This EKS Cluster ARN and Cluster name needs to be included in the Jenkisnfile fo
 
 
 
-ULRS:
-
-1. GITHUB REPO: [https://github.com/Chaklader/CloudDevOpsPipeline]
-2. ELB: [http://aa2f2a15f930847b5803c525d5c4ee2f-2072933900.us-east-1.elb.amazonaws.com:8000/]
-3. 
-
 
 
 
